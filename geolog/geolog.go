@@ -88,7 +88,7 @@ func main() {
 		Location: &tail.SeekInfo{Whence: io.SeekEnd},
 	})
 	if err != nil {
-		log.Fatalf("failed to tail %s: %v", "ips.log", err)
+		log.Fatalf("failed to tail %s: %v", *logFile, err)
 	}
 	for line := range tailHandle.Lines {
 		_, err := handleLine(line.Text, gdb)
