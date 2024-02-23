@@ -24,8 +24,8 @@ type mmrecord struct {
 }
 
 var upgrader = websocket.Upgrader{
-	ReadBufferSize:  512,
-	WriteBufferSize: 512,
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
 }
 
 // parses an IP address from the beginning of a line
@@ -124,7 +124,7 @@ func main() {
 
 			// format payload
 			var payload = fmt.Sprintf(
-				"[%s, %f, %f]",
+				`["%s", %f, %f]`,
 				ip, record.Location.Latitude,
 				record.Location.Longitude)
 
