@@ -60,10 +60,13 @@ func handler(w http.ResponseWriter, r *http.Request, pool *WsPool) {
 func main() {
 	// setup command line arguments
 	parser := argparse.NewParser("run", "run the geolog websocket server")
-	logFile := parser.String("l", "log_file", &argparse.Options{Required: true, Help: "log file to tail"})
-	geoliteDb := parser.String("g", "geodb_file", &argparse.Options{Required: true, Help: "geolite db to use"})
+	logFile := parser.String("l", "log_file",
+		&argparse.Options{Required: true, Help: "log file to tail"})
+	geoliteDb := parser.String("g", "geodb_file",
+		&argparse.Options{Required: true, Help: "geolite db to use"})
 
-	port := parser.String("p", "port", &argparse.Options{Required: false, Help: "port to listen on", Default: "8080"})
+	port := parser.String("p", "port",
+		&argparse.Options{Required: false, Help: "port to listen on", Default: "8080"})
 
 	// parse the command line arguments
 	err := parser.Parse(os.Args)
@@ -120,7 +123,11 @@ func main() {
 			}
 
 			// format payload
-			var payload = fmt.Sprintf("[%s, %f, %f]", ip, record.Location.Latitude, record.Location.Longitude)
+			var payload = fmt.Sprintf(
+				"[%s, %f, %f]",
+				ip, record.Location.Latitude,
+				record.Location.Longitude)
+
 			log.Println(payload)
 			pool.broadcast <- payload
 		}
