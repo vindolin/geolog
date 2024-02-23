@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"regexp"
-	"sync"
 
 	"github.com/akamensky/argparse"
 	"github.com/gorilla/websocket"
@@ -26,48 +25,6 @@ type mmrecord struct {
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-}
-
-type Pool struct {
-	mu        sync.Mutex
-	clients   map[*websocket.Conn]bool
-	broadcast chan string
-}
-
-func NewPool() *Pool {
-	return &Pool{
-		clients:   make(map[*websocket.Conn]bool),
-		broadcast: make(chan string),
-	}
-}
-
-func (p *Pool) Add(conn *websocket.Conn) {
-	p.mu.Lock()
-	p.clients[conn] = true
-	p.mu.Unlock()
-}
-
-func (p *Pool) Remove(conn *websocket.Conn) {
-	p.mu.Lock()
-	delete(p.clients, conn)
-	p.mu.Unlock()
-}
-
-func (p *Pool) Broadcast(ip string) {
-	p.broadcast <- ip
-}
-
-func (p *Pool) Start() {
-	for {
-		ip := <-p.broadcast
-		for client := range p.clients {
-			err := client.WriteMessage(websocket.TextMessage, []byte(ip))
-			if err != nil {
-				log.Println(err)
-				p.Remove(client)
-			}
-		}
-	}
 }
 
 // parses an IP address from the beginning of a line
@@ -89,7 +46,7 @@ func parseIp(line string) (net.IP, error) {
 }
 
 // handler is the main websocket handler
-func handler(w http.ResponseWriter, r *http.Request, pool *Pool) {
+func handler(w http.ResponseWriter, r *http.Request, pool *WsPool) {
 	log.Println("New connection")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -107,6 +64,7 @@ func main() {
 
 	port := parser.String("p", "port", &argparse.Options{Required: false, Help: "port to listen on", Default: "8080"})
 
+	// parse the command line arguments
 	err := parser.Parse(os.Args)
 	if err != nil {
 		log.Print(parser.Usage(err))
@@ -132,22 +90,23 @@ func main() {
 
 	var throttler = NewIPThrottler()
 
-	pool := NewPool()
+	// create a new pool and start it
+	pool := NewWsPool()
 	go pool.Start()
 
 	go func() {
 		// read lines from the log file
 		for line := range tail.Lines {
+
+			// parse the IP address from the line
 			ip, _ := parseIp(line.Text)
 
 			if ip == nil {
 				continue
 			}
 
-			var ipAddr = ip.String()
-
-			// throttle requests from the same IP
-			if !throttler.Allow(ipAddr) {
+			// ruhig Brauner!
+			if !throttler.Allow(ip.String()) {
 				continue
 			}
 
