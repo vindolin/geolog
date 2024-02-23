@@ -14,11 +14,12 @@ import (
 	"github.com/oschwald/maxminddb-golang"
 )
 
+// this struct stores the location of an IP address
 type mmrecord struct {
 	Location struct {
-		Latitude  float64 `maxminddb:"latitude"`
-		Longitude float64 `maxminddb:"longitude"`
-	} `maxminddb:"location"`
+		Latitude  float64
+		Longitude float64
+	}
 }
 
 var throttler = NewIPThrottler()
@@ -99,6 +100,8 @@ func main() {
 	logFile := parser.String("l", "log_file", &argparse.Options{Required: true, Help: "log file to tail"})
 	geoliteDb := parser.String("g", "geodb_file", &argparse.Options{Required: true, Help: "geolite db to use"})
 
+	port := parser.String("p", "port", &argparse.Options{Required: false, Help: "port to listen on", Default: "8080"})
+
 	err := parser.Parse(os.Args)
 	if err != nil {
 		log.Print(parser.Usage(err))
@@ -132,8 +135,8 @@ func main() {
 		handler(w, r, tail, gdb)
 	})
 
-	log.Println("Listening on :8080")
+	log.Println("Listening on :" + *port)
 
 	// start the http server
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }
