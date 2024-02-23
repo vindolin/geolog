@@ -120,8 +120,8 @@ func main() {
 			}
 
 			// format payload
-			log.Printf("ip: %s, lat: %f, long: %f\n", ip, record.Location.Latitude, record.Location.Longitude)
 			var payload = fmt.Sprintf("[%s, %f, %f]", ip, record.Location.Latitude, record.Location.Longitude)
+			log.Println(payload)
 			pool.broadcast <- payload
 		}
 	}()
