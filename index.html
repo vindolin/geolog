@@ -1,12 +1,30 @@
 <!DOCTYPE html>
 <html>
+<head>
+<title>GeoLog</title>
+<style>
+  body {
+    font-family: monospace;
+  }
+</style>
+</head>
 <body>
+<div id="output"></div>
+</body>
 <script>
-var ws = new WebSocket("ws://192.168.178.113:8080/ws");
+let loc = window.location
+let scheme;
+
+if (loc.protocol === 'https:') {
+    scheme = 'wss:';
+} else {
+    scheme = 'ws:';
+}
+let ws = new WebSocket(`${scheme}//${loc.host}/ws`);
+let output = document.getElementById('output');
+
 ws.onmessage = function(event) {
-  console.log("Received line: " + event.data);
+  output.innerHTML += `${event.data}<br>`;
 };
 </script>
-Hello!
-</body>
 </html>
