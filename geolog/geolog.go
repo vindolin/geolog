@@ -2,15 +2,25 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"regexp"
 
 	"github.com/akamensky/argparse"
-	"github.com/hpcloud/tail"
+	"github.com/gorilla/websocket"
+	"github.com/nxadm/tail"
 	"github.com/oschwald/maxminddb-golang"
+)
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
+var (
+	lastIpstr string
 )
 
 type mmrecord struct {
@@ -19,8 +29,6 @@ type mmrecord struct {
 		Longitude float64 `maxminddb:"longitude"`
 	} `maxminddb:"location"`
 }
-
-var lastIpstr string
 
 func parseIp(line string) (net.IP, error) {
 	ipregexp := regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`)
@@ -43,35 +51,47 @@ func parseIp(line string) (net.IP, error) {
 	return ipAddr, nil
 }
 
-func handleLine(line string, geoDb *maxminddb.Reader) {
-	ipAddr, err := parseIp(line)
+func handler(w http.ResponseWriter, r *http.Request, tail *tail.Tail, gdb *maxminddb.Reader) {
+	log.Println("New connection")
+	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Printf("failed to parse IP address: %v", err)
+		log.Println(err)
 		return
 	}
 
-	if ipAddr == nil {
-		return
-	}
+	for line := range tail.Lines {
+		ipAddr, _ := parseIp(line.Text)
 
-	var record mmrecord
-	err = geoDb.Lookup(ipAddr, &record)
-	if err != nil {
-		log.Printf("failed to lookup ip %s: %v", ipAddr, err)
-		return
+		if ipAddr == nil {
+			continue
+		}
+
+		var record mmrecord
+		err = gdb.Lookup(ipAddr, &record)
+		if err != nil {
+			log.Printf("failed to lookup ip %s: %v", ipAddr, err)
+			return
+		}
+
+		log.Printf("ip: %s, lat: %f, long: %f\n", ipAddr, record.Location.Latitude, record.Location.Longitude)
+		var payload = fmt.Sprintf("[%s, %f, %f]", ipAddr, record.Location.Latitude, record.Location.Longitude)
+
+		err = conn.WriteMessage(websocket.TextMessage, []byte(payload))
+		if err != nil {
+			log.Println(err)
+			return
+		}
 	}
-	fmt.Printf("ip: %s, lat: %f, long: %f\n", ipAddr, record.Location.Latitude, record.Location.Longitude)
 }
 
 func main() {
-
 	parser := argparse.NewParser("run", "run the geolog websocket server")
 	logFile := parser.String("l", "log_file", &argparse.Options{Required: true, Help: "log file to tail"})
 	geoliteDb := parser.String("g", "geodb_file", &argparse.Options{Required: true, Help: "geolite db to use"})
 
 	err := parser.Parse(os.Args)
 	if err != nil {
-		fmt.Print(parser.Usage(err))
+		log.Print(parser.Usage(err))
 		os.Exit(1)
 	}
 
@@ -82,16 +102,22 @@ func main() {
 	}
 	defer gdb.Close()
 
-	tailHandle, err := tail.TailFile(*logFile, tail.Config{
-		Follow:   true,
-		Location: &tail.SeekInfo{Whence: io.SeekEnd},
+	tail, err := tail.TailFile(*logFile, tail.Config{
+		Follow: true,
+		ReOpen: true,
 	})
 	if err != nil {
-		log.Fatalf("failed to tail %s: %v", *logFile, err)
+		log.Fatal(err)
 	}
 
-	for line := range tailHandle.Lines {
-		go handleLine(line.Text, gdb)
-	}
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		handler(w, r, tail, gdb)
+	})
 
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "index.html")
+	})
+
+	log.Println("Listening on :8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
