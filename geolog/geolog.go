@@ -19,9 +19,7 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-var (
-	lastIpstr string
-)
+var throttler = NewIPThrottler()
 
 type mmrecord struct {
 	Location struct {
@@ -33,11 +31,6 @@ type mmrecord struct {
 func parseIp(line string) (net.IP, error) {
 	ipregexp := regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`)
 	ipstr := ipregexp.FindString(line)
-
-	if ipstr == lastIpstr {
-		return nil, nil
-	}
-	lastIpstr = ipstr
 
 	if ipstr == "" {
 		return nil, fmt.Errorf("failed to find IP address")
@@ -60,21 +53,27 @@ func handler(w http.ResponseWriter, r *http.Request, tail *tail.Tail, gdb *maxmi
 	}
 
 	for line := range tail.Lines {
-		ipAddr, _ := parseIp(line.Text)
+		ip, _ := parseIp(line.Text)
 
-		if ipAddr == nil {
+		if ip == nil {
+			continue
+		}
+
+		var ipAddr = ip.String()
+
+		if !throttler.Allow(ipAddr) {
 			continue
 		}
 
 		var record mmrecord
-		err = gdb.Lookup(ipAddr, &record)
+		err = gdb.Lookup(ip, &record)
 		if err != nil {
-			log.Printf("failed to lookup ip %s: %v", ipAddr, err)
+			log.Printf("failed to lookup ip %s: %v", ip, err)
 			return
 		}
 
-		log.Printf("ip: %s, lat: %f, long: %f\n", ipAddr, record.Location.Latitude, record.Location.Longitude)
-		var payload = fmt.Sprintf("[%s, %f, %f]", ipAddr, record.Location.Latitude, record.Location.Longitude)
+		log.Printf("ip: %s, lat: %f, long: %f\n", ip, record.Location.Latitude, record.Location.Longitude)
+		var payload = fmt.Sprintf("[%s, %f, %f]", ip, record.Location.Latitude, record.Location.Longitude)
 
 		err = conn.WriteMessage(websocket.TextMessage, []byte(payload))
 		if err != nil {
