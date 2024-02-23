@@ -18,14 +18,14 @@ import (
 // this struct stores the location of an IP address
 type mmrecord struct {
 	Location struct {
-		Latitude  float64
-		Longitude float64
-	}
+		Latitude  float64 `maxminddb:"latitude"`
+		Longitude float64 `maxminddb:"longitude"`
+	} `maxminddb:"location"`
 }
 
 var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
+	ReadBufferSize:  512,
+	WriteBufferSize: 512,
 }
 
 // parses an IP address from the beginning of a line
