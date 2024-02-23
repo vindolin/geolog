@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+var ws = new WebSocket("ws://192.168.178.113:8080/ws");
+ws.onmessage = function(event) {
+  console.log("Received line: " + event.data);
+};
+</script>
+Hello!
+</body>
+</html>
