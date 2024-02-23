@@ -8,30 +8,23 @@ import (
 )
 
 // WsPool is a collection of websocket connections
-
 type WsPool struct {
-	mu        sync.Mutex
-	clients   map[*websocket.Conn]bool
+	clients   sync.Map
 	broadcast chan string
 }
 
 func NewWsPool() *WsPool {
 	return &WsPool{
-		clients:   make(map[*websocket.Conn]bool),
 		broadcast: make(chan string),
 	}
 }
 
 func (p *WsPool) Add(conn *websocket.Conn) {
-	p.mu.Lock()
-	p.clients[conn] = true
-	p.mu.Unlock()
+	p.clients.Store(conn, true)
 }
 
 func (p *WsPool) Remove(conn *websocket.Conn) {
-	p.mu.Lock()
-	delete(p.clients, conn)
-	p.mu.Unlock()
+	p.clients.Delete(conn)
 }
 
 func (p *WsPool) Broadcast(ip string) {
@@ -41,12 +34,13 @@ func (p *WsPool) Broadcast(ip string) {
 func (p *WsPool) Start() {
 	for {
 		ip := <-p.broadcast
-		for client := range p.clients {
-			err := client.WriteMessage(websocket.TextMessage, []byte(ip))
+		p.clients.Range(func(client, _ interface{}) bool {
+			err := client.(*websocket.Conn).WriteMessage(websocket.TextMessage, []byte(ip))
 			if err != nil {
 				log.Println(err)
-				p.Remove(client)
+				p.Remove(client.(*websocket.Conn))
 			}
-		}
+			return true
+		})
 	}
 }
