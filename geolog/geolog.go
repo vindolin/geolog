@@ -35,37 +35,36 @@ func parseIp(line string) (net.IP, error) {
 		return nil, fmt.Errorf("failed to find IP address")
 	}
 
-	ip := net.ParseIP(ipstr)
-	if ip == nil {
+	ipAddr := net.ParseIP(ipstr)
+	if ipAddr == nil {
 		return nil, fmt.Errorf("failed to parse IP address")
 	}
 
-	return ip, nil
+	return ipAddr, nil
 }
 
-func handleLine(line string, geoDb *maxminddb.Reader) (*mmrecord, error) {
-	ip, err := parseIp(line)
+func handleLine(line string, geoDb *maxminddb.Reader) {
+	ipAddr, err := parseIp(line)
 	if err != nil {
 		log.Printf("failed to parse IP address: %v", err)
-		return nil, err
+		return
 	}
 
-	if ip == nil {
-		return nil, nil
+	if ipAddr == nil {
+		return
 	}
 
 	var record mmrecord
-	err = geoDb.Lookup(ip, &record)
+	err = geoDb.Lookup(ipAddr, &record)
 	if err != nil {
-		log.Printf("failed to lookup ip %s: %v", ip, err)
-		return nil, err
+		log.Printf("failed to lookup ip %s: %v", ipAddr, err)
+		return
 	}
-	fmt.Printf("ip: %s, lat: %f, long: %f\n", ip, record.Location.Latitude, record.Location.Longitude)
-
-	return &record, nil
+	fmt.Printf("ip: %s, lat: %f, long: %f\n", ipAddr, record.Location.Latitude, record.Location.Longitude)
 }
 
 func main() {
+
 	parser := argparse.NewParser("run", "run the geolog websocket server")
 	logFile := parser.String("l", "log_file", &argparse.Options{Required: true, Help: "log file to tail"})
 	geoliteDb := parser.String("g", "geodb_file", &argparse.Options{Required: true, Help: "geolite db to use"})
@@ -90,10 +89,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to tail %s: %v", *logFile, err)
 	}
+
 	for line := range tailHandle.Lines {
-		_, err := handleLine(line.Text, gdb)
-		if err != nil {
-			log.Printf("failed to handle line: %v", err)
-		}
+		go handleLine(line.Text, gdb)
 	}
+
 }
