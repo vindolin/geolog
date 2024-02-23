@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"time"
 
 	"github.com/akamensky/argparse"
 	"github.com/gorilla/websocket"
@@ -88,7 +89,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var throttler = NewIPThrottler()
+	var throttler = NewIPThrottler(5*time.Second, 60*time.Second)
 
 	// create a new pool and start it
 	pool := NewWsPool()
