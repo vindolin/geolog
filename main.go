@@ -48,8 +48,8 @@ func parseIp(line string) (net.IP, error) {
 
 // handler is the main websocket handler
 func handler(w http.ResponseWriter, r *http.Request, pool *WsPool) {
-	log.Println("New connection")
 	conn, err := upgrader.Upgrade(w, r, nil)
+	log.Println("New connection from:", conn.RemoteAddr())
 	if err != nil {
 		log.Println(err)
 		return
