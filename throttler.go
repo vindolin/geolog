@@ -29,7 +29,7 @@ func (t *IPThrottler) Allow(ip string) bool {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	// Clean up old entries if necessary
+	// Clean up old entries if the cleanup interval has passed
 	if time.Since(t.lastClean) > t.cleanup {
 		for ip, lastTime := range t.ips {
 			if time.Since(lastTime) > t.throttle {
