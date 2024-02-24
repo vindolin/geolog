@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net"
 	"net/http"
@@ -68,11 +69,26 @@ func main() {
 	port := parser.String("p", "port",
 		&argparse.Options{Required: false, Help: "port to listen on", Default: "8080"})
 
+	darkMode := parser.Flag("d", "dark", &argparse.Options{Help: "dark mode"})
+
 	// parse the command line arguments
 	err := parser.Parse(os.Args)
 	if err != nil {
 		log.Print(parser.Usage(err))
 		os.Exit(1)
+	}
+
+	// why no
+	var darkModeStr string
+	if *darkMode {
+		darkModeStr = "dark"
+	} else {
+		darkModeStr = "light"
+	}
+
+	// this struct holds the data that will be passed to the index.html template
+	type IndexTemplateData struct {
+		DarkMode string
 	}
 
 	// open the maxmind db
@@ -132,7 +148,6 @@ func main() {
 			pool.broadcast <- payload
 		}
 	}()
-
 	// serve the favicon.ico file
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "favicon.ico")
@@ -140,7 +155,8 @@ func main() {
 
 	// serve the index.html file
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "index.html")
+		template.Must(template.ParseFiles("index.html")).Execute(w, IndexTemplateData{DarkMode: darkModeStr})
+		// http.ServeFile(w, r, "index.html")
 	})
 
 	// serve the websocket
