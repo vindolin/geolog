@@ -36,7 +36,7 @@ html, body {
 
 <script>
 (() => {
-  const darkMode = {{if .DarkMode}}true{{ else }}false{{ end };
+  const darkMode = {{if .DarkMode}}true{{ else }}false{{ end }};
 
   function hslToRgb(h, s, l){
     var r, g, b;
@@ -94,7 +94,7 @@ html, body {
   // Hide the attribution
   map.attributionControl.setPrefix();
 
-  let loc = window.location
+  let loc = window.location;
   let scheme;
 
   if (loc.protocol === 'https:') {
