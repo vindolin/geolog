@@ -76,8 +76,7 @@ html, body {
         maxZoom: 19,
     }).addTo(map)
 
-    luminosity = 0.5;
-    randomColor = (hue) => hslToRgb(hue, 1.0, 0.5);
+    luminosity = 0.4;
   } else {
     var Stadia_AlidadeSmoothDark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.{ext}', {
         minZoom: 0,
@@ -86,7 +85,6 @@ html, body {
     }).addTo(map);
 
     luminosity = 0.6;
-    randomColor = (hue) => hslToRgb(hue, 1.0, 0.6);
   }
 
   let mapWidth = map.getSize().x;
