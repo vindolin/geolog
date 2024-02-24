@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -101,8 +102,9 @@ func main() {
 
 	// tail the log file
 	tail, err := tail.TailFile(*logFile, tail.Config{
-		Follow: true,
-		ReOpen: true,
+		Follow:   true,
+		ReOpen:   true,
+		Location: &tail.SeekInfo{Offset: 0, Whence: io.SeekEnd},
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -155,8 +157,8 @@ func main() {
 
 	// serve the index.html file
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		template.Must(template.ParseFiles("index.html")).Execute(w, IndexTemplateData{DarkMode: darkModeStr})
-		// http.ServeFile(w, r, "index.html")
+		template.Must(template.ParseFiles("index.html")).Execute(
+			w, IndexTemplateData{DarkMode: darkModeStr})
 	})
 
 	// serve the websocket
