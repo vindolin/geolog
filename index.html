@@ -66,18 +66,12 @@ html, body {
       [30, 160]
   ],);
 
-  const mode = '{{.DarkMode}}';
+  let darkMode = {{if .DarkMode}}true{{else}}false{{end}};
 
   let randomColor;
   let luminosity;
 
-  if(mode === 'light') {
-    var OpenStreetMap_Mapnik = L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-    }).addTo(map)
-
-    luminosity = 0.4;
-  } else {
+  if(darkMode) {
     var Stadia_AlidadeSmoothDark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.{ext}', {
         minZoom: 0,
         maxZoom: 20,
@@ -85,6 +79,12 @@ html, body {
     }).addTo(map);
 
     luminosity = 0.6;
+  } else {
+    var OpenStreetMap_Mapnik = L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+    }).addTo(map)
+
+    luminosity = 0.4;
   }
 
   let mapWidth = map.getSize().x;

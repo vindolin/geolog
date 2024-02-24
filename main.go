@@ -70,7 +70,7 @@ func main() {
 	port := parser.String("p", "port",
 		&argparse.Options{Required: false, Help: "port to listen on", Default: "8080"})
 
-	darkMode := *parser.Flag("d", "dark", &argparse.Options{Help: "dark mode"})
+	darkMode := parser.Flag("d", "dark", &argparse.Options{Help: "dark mode"})
 
 	// parse the command line arguments
 	err := parser.Parse(os.Args)
@@ -79,17 +79,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	// why no ternary operator? 😭
-	var darkModeStr string
-	if darkMode {
-		darkModeStr = "dark"
-	} else {
-		darkModeStr = "light"
-	}
-
 	// this struct holds the data that will be passed to the index.html template
 	type IndexTemplateData struct {
-		DarkMode string
+		DarkMode bool
 	}
 
 	// open the maxmind db
@@ -158,7 +150,7 @@ func main() {
 	// serve the index.html file
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		template.Must(template.ParseFiles("index.html")).Execute(
-			w, IndexTemplateData{DarkMode: darkModeStr})
+			w, IndexTemplateData{DarkMode: *darkMode})
 	})
 
 	// serve the websocket
