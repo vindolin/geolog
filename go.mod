@@ -1,4 +1,4 @@
-module atomar.de/geolog
+module github.com/vindolin/geolog
 
 go 1.22.0
 
