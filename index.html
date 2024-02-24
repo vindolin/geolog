@@ -36,23 +36,29 @@ html, body {
 
 <script>
 (() => {
-  function hslToRgb(h, s, l) {
-    let c = (1 - Math.abs(2 * l - 1)) * s;
-    let hp = h / 60.0;
-    let x = c * (1 - Math.abs((hp % 2) - 1));
-    let rgb1;
-    if (isNaN(h)) rgb1 = [0, 0, 0];
-    else if (hp <= 1) rgb1 = [c, x, 0];
-    else if (hp <= 2) rgb1 = [x, c, 0];
-    else if (hp <= 3) rgb1 = [0, c, x];
-    else if (hp <= 4) rgb1 = [0, x, c];
-    else if (hp <= 5) rgb1 = [x, 0, c];
-    else if (hp <= 6) rgb1 = [c, 0, x];
-    let m = l - c * 0.5;
-    return [
-      Math.round(255 * (rgb1[0] + m)),
-      Math.round(255 * (rgb1[1] + m)),
-      Math.round(255 * (rgb1[2] + m))];
+  function hslToRgb(h, s, l){
+    var r, g, b;
+
+    if(s == 0){
+      r = g = b = l; // achromatic
+    }else{
+      var hue2rgb = function hue2rgb(p, q, t){
+        if(t < 0) t += 1;
+        if(t > 1) t -= 1;
+        if(t < 1/6) return p + (q - p) * 6 * t;
+        if(t < 1/2) return q;
+        if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      }
+
+      var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      var p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+
+    return [r * 255, g * 255, b * 255];
   }
 
   var map = L.map('map', {zoomControl: false}).fitBounds([
@@ -60,11 +66,28 @@ html, body {
       [30, 160]
   ],);
 
-  var Stadia_AlidadeSmoothDark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.{ext}', {
-      minZoom: 0,
-      maxZoom: 20,
-      ext: 'png'
-  }).addTo(map);
+  const mode = 'light';
+
+  let randomColor;
+  let luminosity;
+
+  if(mode === 'light') {
+    var OpenStreetMap_Mapnik = L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+    }).addTo(map)
+
+    luminosity = 0.5;
+    randomColor = (hue) => hslToRgb(hue, 1.0, 0.5);
+  } else {
+    var Stadia_AlidadeSmoothDark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.{ext}', {
+        minZoom: 0,
+        maxZoom: 20,
+        ext: 'png'
+    }).addTo(map);
+
+    luminosity = 0.6;
+    randomColor = (hue) => hslToRgb(hue, 1.0, 0.6);
+  }
 
   let mapWidth = map.getSize().x;
   let strokeWidth = mapWidth / 300;
@@ -85,8 +108,7 @@ html, body {
   let output = document.getElementById('output');
 
   function renderCircle(latLon) {
-      let color = hslToRgb(Math.random(), 1, 0.7);
-
+      let color = hslToRgb(Math.random(), 1.0, luminosity);
       let c = L.circleMarker(
         latLon, {
           radius: 2.0,
@@ -115,7 +137,6 @@ html, body {
   }
 
   ws.onmessage = function(event) {
-    console.log(event.data);
     let latLang  = JSON.parse(event.data).slice(-2);
     renderCircle(latLang);
     console.log(latLang);
