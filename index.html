@@ -36,6 +36,8 @@ html, body {
 
 <script>
 (() => {
+  const darkMode = {{if .DarkMode}}true{{ else }}false{{ end };
+
   function hslToRgb(h, s, l){
     var r, g, b;
 
