@@ -79,7 +79,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// why no
+	// why no ternary operator? 😭
 	var darkModeStr string
 	if darkMode {
 		darkModeStr = "dark"
