@@ -70,7 +70,7 @@ func main() {
 	port := parser.String("p", "port",
 		&argparse.Options{Required: false, Help: "port to listen on", Default: "8080"})
 
-	darkMode := parser.Flag("d", "dark", &argparse.Options{Help: "dark mode"})
+	darkMode := *parser.Flag("d", "dark", &argparse.Options{Help: "dark mode"})
 
 	// parse the command line arguments
 	err := parser.Parse(os.Args)
@@ -81,7 +81,7 @@ func main() {
 
 	// why no
 	var darkModeStr string
-	if *darkMode {
+	if darkMode {
 		darkModeStr = "dark"
 	} else {
 		darkModeStr = "light"
