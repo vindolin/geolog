@@ -33,105 +33,107 @@ html, body {
 <body>
 
 <div id="map"></div>
-<!-- <div id="output"></div> -->
 
 <script>
-  (() => {
-    function hslToRgb(h, s, l) {
-      var r, g, b;
+(() => {
+  function hslToRgb(h, s, l) {
+    let c = (1 - Math.abs(2 * l - 1)) * s;
+    let hp = h / 60.0;
+    let x = c * (1 - Math.abs((hp % 2) - 1));
+    let rgb1;
+    if (isNaN(h)) rgb1 = [0, 0, 0];
+    else if (hp <= 1) rgb1 = [c, x, 0];
+    else if (hp <= 2) rgb1 = [x, c, 0];
+    else if (hp <= 3) rgb1 = [0, c, x];
+    else if (hp <= 4) rgb1 = [0, x, c];
+    else if (hp <= 5) rgb1 = [x, 0, c];
+    else if (hp <= 6) rgb1 = [c, 0, x];
+    let m = l - c * 0.5;
+    return [
+      Math.round(255 * (rgb1[0] + m)),
+      Math.round(255 * (rgb1[1] + m)),
+      Math.round(255 * (rgb1[2] + m))];
+  }
 
-      if (s == 0) {
-        r = g = b = l; // achromatic
+  var map = L.map('map', {zoomControl: false}).fitBounds([
+      [20, -84],
+      [30, 160]
+  ],);
+
+  var Stadia_AlidadeSmoothDark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.{ext}', {
+      minZoom: 0,
+      maxZoom: 20,
+      ext: 'png'
+  }).addTo(map);
+
+  let mapWidth = map.getSize().x;
+  let strokeWidth = mapWidth / 300;
+  let maxRadius = mapWidth / 15;
+
+  // Hide the attribution
+  map.attributionControl.setPrefix();
+
+  let loc = window.location
+  let scheme;
+
+  if (loc.protocol === 'https:') {
+      scheme = 'wss:';
+  } else {
+      scheme = 'ws:';
+  }
+  let ws = new WebSocket(`${scheme}//${loc.host}/ws`);
+  let output = document.getElementById('output');
+
+  function renderCircle(latLon) {
+      let color = hslToRgb(Math.random(), 1, 0.7);
+
+      let c = L.circleMarker(
+        latLon, {
+          radius: 2.0,
+          fill: true,
+          color: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
+        }
+      );
+      c.addTo(map);
+      animateCircle.call(c);
+  }
+
+  function animateCircle() {
+      let r = this.getRadius()
+      if (r > maxRadius) {
+          this.removeFrom(map);
       } else {
-        function hue2rgb(p, q, t) {
-          if (t < 0) t += 1;
-          if (t > 1) t -= 1;
-          if (t < 1/6) return p + (q - p) * 6 * t;
-          if (t < 1/2) return q;
-          if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-          return p;
-        }
-
-        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-        var p = 2 * l - q;
-
-        r = hue2rgb(p, q, h + 1/3);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1/3);
+          r *= 1.01
+          this.setRadius(r);
+          this.setStyle({
+            // weight: strokeWidth * (maxRadius - r) / maxRadius,
+            opacity: 1 - r / maxRadius,
+            fillOpacity: 1 - r / maxRadius,
+          });
+          setTimeout(animateCircle.bind(this), 10);
       }
+  }
 
-      return [ r * 255, g * 255, b * 255 ];
-    }
+  ws.onmessage = function(event) {
+    console.log(event.data);
+    let latLang  = JSON.parse(event.data).slice(-2);
+    renderCircle(latLang);
+    console.log(latLang);
+  };
 
-    var map = L.map('map', {zoomControl: false}).fitBounds([
-        [20, -84],
-        [30, 160]
-    ],);
+  ws.onclose = function(event) {
+    console.log('Socket is closed. Reconnecting in 1 second.', event.reason);
+    setTimeout(() => {
+      connect();
+    }, 1000);
+  };
 
-    var Stadia_AlidadeSmoothDark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.{ext}', {
-        minZoom: 0,
-        maxZoom: 20,
-        ext: 'png'
-    }).addTo(map);
+  ws.onerror = function(err) {
+    console.error('Socket error: ', err.message, 'Closing socket');
+    ws.close();
+  };
 
-    let mapWidth = map.getSize().x;
-    let strokeWidth = mapWidth / 300;
-    let maxRadius = mapWidth / 15;
-
-    // Hide the attribution
-    map.attributionControl.setPrefix();
-
-    let loc = window.location
-    let scheme;
-
-    if (loc.protocol === 'https:') {
-        scheme = 'wss:';
-    } else {
-        scheme = 'ws:';
-    }
-    let ws = new WebSocket(`${scheme}//${loc.host}/ws`);
-    let output = document.getElementById('output');
-
-    function renderCircle(latLon) {
-        let color = hslToRgb(Math.random(), 1, 0.7);
-
-        let c = L.circleMarker(
-          latLon, {
-            radius: 2.0,
-            fill: true,
-            color: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
-          }
-        );
-        c.addTo(map);
-        animateCircle.call(c);
-    }
-
-    function animateCircle() {
-        let r = this.getRadius()
-        if (r > maxRadius) {
-            this.removeFrom(map);
-        } else {
-            r *= 1.01
-            this.setRadius(r);
-            this.setStyle({
-              // weight: strokeWidth * (maxRadius - r) / maxRadius,
-              opacity: 1 - r / maxRadius,
-              fillOpacity: 1 - r / maxRadius,
-            });
-            setTimeout(animateCircle.bind(this), 10);
-        }
-    }
-
-
-    ws.onmessage = function(event) {
-      // output.innerHTML += `${event.data}<br>`;
-      console.log(event.data);
-      let latLang  = JSON.parse(event.data).slice(-2);
-      renderCircle(latLang);
-      console.log(latLang);
-    };
-
-  })();
-  </script>
-  </body>
+})();
+</script>
+</body>
 </html>
