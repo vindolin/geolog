@@ -40,7 +40,7 @@ html, body {
 // initialize with GO template variables
 const darkMode = {{if .DarkMode}}true{{ else }}false{{ end }};
 
-const pingInterval = 30 * 1000;
+const pingIntervalTime = 30 * 1000;
 
 function hslToRgb(h, s, l){
     let r, g, b;
@@ -113,7 +113,6 @@ function registerWebsocketHandlers(ws) {
     ws.onmessage = function(event) {
         // check if message is a ping
         if(event.data.startsWith('ping')) {
-            console.log(event.data);
             lastPingTimestamp = Date.now();
             return;
         }
@@ -121,11 +120,10 @@ function registerWebsocketHandlers(ws) {
         // else parse the lat and long and render the circle
         let latLang  = JSON.parse(event.data).slice(-2);
         renderCircle(latLang);
-        console.log(latLang);
     };
 
     ws.onclose = function(event) {
-        console.log('Socket is closed. Reconnecting in 1 second.');
+        console.info('Socket is closed. Reconnecting in 1 second.');
 
         // fast reconnect
         setTimeout(() => {
@@ -142,21 +140,21 @@ function registerWebsocketHandlers(ws) {
 
 // connect to the websocket
 function connect() {
-    console.log('Connecting to websocket');
+    console.info('Connecting to websocket');
     ws = new WebSocket(`${scheme}//${loc.host}/ws`);
 
     registerWebsocketHandlers(ws);
 
     // periodically check if we have received a ping in the last n seconds
     pingInterval = setInterval(function() {
-        if (Date.now() - lastPingTimestamp > pingInterval) {
+        if (Date.now() - lastPingTimestamp > pingIntervalTime) {
             let seconds = pingInterval / 1000;
-            console.log(`No ping received for more than ${seconds} seconds!`);
+            console.info(`No ping received for more than ${seconds} seconds!`);
             // ws.close();
             lastPingTimestamp = Date.now();
             connect();
         }
-    }, pingInterval / 2);
+    }, pingIntervalTime / 2);
 }
 
 function renderCircle(latLon) {
