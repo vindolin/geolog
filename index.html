@@ -36,7 +36,9 @@ html, body {
 
 <script>
 (() => {
-  const darkMode = {{if .DarkMode}}true{{ else }}false{{ end }};
+  const DARKMODE = {{if .DarkMode}}true{{ else }}false{{ end }};
+
+  const PING_INTERVAL = 30 * 1000;
 
   function hslToRgb(h, s, l){
     var r, g, b;
@@ -135,6 +137,14 @@ html, body {
   }
 
   ws.onmessage = function(event) {
+    // check if message is a ping
+    if(event.data.startsWith('ping')) {
+      console.log(event.data);
+      lastPingTimestamp = Date.now();
+      return;
+    }
+
+    // else parse the lat and long and render the circle
     let latLang  = JSON.parse(event.data).slice(-2);
     renderCircle(latLang);
     console.log(latLang);
@@ -151,6 +161,17 @@ html, body {
     console.error('Socket error: ', err.message, 'Closing socket');
     ws.close();
   };
+
+  let lastPingTimestamp = Date.now();
+
+  // periodically check if we have received a ping in the last n seconds
+  setInterval(function() {
+      if (Date.now() - lastPingTimestamp > PING_INTERVAL) {
+          console.log('No ping received for more than 10 seconds!');
+          socket.close();
+          connect();
+      }
+  }, PING_INTERVAL / 2);
 
 })();
 </script>

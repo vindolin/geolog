@@ -56,6 +56,7 @@ func handler(w http.ResponseWriter, r *http.Request, pool *WsPool) {
 		log.Println(err)
 		return
 	}
+
 	pool.Add(conn)
 }
 
@@ -142,6 +143,17 @@ func main() {
 			pool.broadcast <- payload
 		}
 	}()
+
+	go func() {
+		for {
+			time.Sleep(10 * time.Second) // send a ping every 10 seconds
+
+			var payload = fmt.Sprintf(
+				"ping %d", time.Now().Unix())
+			pool.broadcast <- payload
+		}
+	}()
+
 	// serve the favicon.ico file
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "favicon.ico")
