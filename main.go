@@ -73,6 +73,8 @@ func main() {
 
 	darkMode := parser.Flag("d", "dark", &argparse.Options{Help: "dark mode"})
 
+	const PING_INTERVAL = 10
+
 	// parse the command line arguments
 	err := parser.Parse(os.Args)
 	if err != nil {
@@ -146,7 +148,7 @@ func main() {
 
 	go func() {
 		for {
-			time.Sleep(10 * time.Second) // send a ping every 10 seconds
+			time.Sleep(PING_INTERVAL * time.Second) // send a ping every 10 seconds
 
 			var payload = fmt.Sprintf(
 				"ping %d", time.Now().Unix())
