@@ -104,7 +104,14 @@ html, body {
   } else {
       scheme = 'ws:';
   }
-  let ws = new WebSocket(`${scheme}//${loc.host}/ws`);
+  let ws;
+
+  connect = () => {
+    ws = new WebSocket(`${scheme}//${loc.host}/ws`);
+  }
+
+  connect();
+
   let output = document.getElementById('output');
 
   function renderCircle(latLon) {
