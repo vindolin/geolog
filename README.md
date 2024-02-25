@@ -1,5 +1,7 @@
 ## geolog - watches a web server log file and draw geolocation pings on a map in your browser
 
+![image](https://github.com/vindolin/geolog/assets/834347/4e54e7ed-9251-4d07-a67d-eadcc8162715)
+
 > [!IMPORTANT]
 > You have to sign up to get a Maxmind licence key for their free geoip service at: https://dev.maxmind.com/geoip before you can use this tool.
 
