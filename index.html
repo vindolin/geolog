@@ -36,44 +36,44 @@ html, body {
 
 <script>
 (() => {
-  const DARKMODE = {{if .DarkMode}}true{{ else }}false{{ end }};
 
-  const PING_INTERVAL = 30 * 1000;
+// initialize with GO template variables
+const darkMode = {{if .DarkMode}}true{{ else }}false{{ end }};
 
-  function hslToRgb(h, s, l){
-    var r, g, b;
+const pingInterval = 30 * 1000;
+
+function hslToRgb(h, s, l){
+    let r, g, b;
 
     if(s == 0){
-      r = g = b = l; // achromatic
+        r = g = b = l;
     }else{
-      var hue2rgb = function hue2rgb(p, q, t){
-        if(t < 0) t += 1;
-        if(t > 1) t -= 1;
-        if(t < 1/6) return p + (q - p) * 6 * t;
-        if(t < 1/2) return q;
-        if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-        return p;
-      }
+        var hue2rgb = function hue2rgb(p, q, t){
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        }
 
-      var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-      var p = 2 * l - q;
-      r = hue2rgb(p, q, h + 1/3);
-      g = hue2rgb(p, q, h);
-      b = hue2rgb(p, q, h - 1/3);
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
     }
 
     return [r * 255, g * 255, b * 255];
-  }
+}
 
-  var map = L.map('map', {zoomControl: false}).fitBounds([
-      [20, -84],
-      [30, 160]
-  ],);
+let map = L.map('map', {zoomControl: false}).fitBounds([
+    [20, -84],
+    [30, 160]
+]);
 
-  let randomColor;
-  let luminosity;
-
-  if(darkMode) {
+let luminosity;
+if(darkMode) {
     var Stadia_AlidadeSmoothDark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.{ext}', {
         minZoom: 0,
         maxZoom: 20,
@@ -81,104 +81,115 @@ html, body {
     }).addTo(map);
 
     luminosity = 0.6;
-  } else {
+
+} else {
     var OpenStreetMap_Mapnik = L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
     }).addTo(map)
 
     luminosity = 0.4;
-  }
+}
 
-  let mapWidth = map.getSize().x;
-  let strokeWidth = mapWidth / 300;
-  let maxRadius = mapWidth / 15;
+const mapWidth = map.getSize().x;
+const strokeWidth = mapWidth / 300;
+const maxRadius = mapWidth / 15;
+const loc = window.location;
 
-  // Hide the attribution
-  map.attributionControl.setPrefix();
+// Hide the attribution, we are doing this for our self
+map.attributionControl.setPrefix();
 
-  let loc = window.location;
-  let scheme;
+let scheme;
+if (loc.protocol === 'https:') {
+    scheme = 'wss:';
+} else {
+    scheme = 'ws:';
+}
 
-  if (loc.protocol === 'https:') {
-      scheme = 'wss:';
-  } else {
-      scheme = 'ws:';
-  }
-  let ws;
+let lastPingTimestamp = Date.now();
+let ws;
+let pingInterval;
 
-  connect = () => {
-    ws = new WebSocket(`${scheme}//${loc.host}/ws`);
-  }
-
-  connect();
-
-  let output = document.getElementById('output');
-
-  function renderCircle(latLon) {
-      let color = hslToRgb(Math.random(), 1.0, luminosity);
-      let c = L.circleMarker(
-        latLon, {
-          radius: 2.0,
-          fill: true,
-          color: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
+function registerWebsocketHandlers(ws) {
+    ws.onmessage = function(event) {
+        // check if message is a ping
+        if(event.data.startsWith('ping')) {
+            console.log(event.data);
+            lastPingTimestamp = Date.now();
+            return;
         }
-      );
-      c.addTo(map);
-      animateCircle.call(c);
-  }
 
-  function animateCircle() {
-      let r = this.getRadius()
-      if (r > maxRadius) {
-          this.removeFrom(map);
-      } else {
-          r *= 1.01
-          this.setRadius(r);
-          this.setStyle({
+        // else parse the lat and long and render the circle
+        let latLang  = JSON.parse(event.data).slice(-2);
+        renderCircle(latLang);
+        console.log(latLang);
+    };
+
+    ws.onclose = function(event) {
+        console.log('Socket is closed. Reconnecting in 1 second.');
+
+        // fast reconnect
+        setTimeout(() => {
+            clearInterval(pingInterval);
+            connect();
+        }, 1000);
+    };
+
+    ws.onerror = function(err) {
+        console.error(`Socket error: ${err.message}, Closing socket`);
+        ws.close();
+    };
+}
+
+// connect to the websocket
+connect = () => {
+    console.log('Connecting to websocket');
+    ws = new WebSocket(`${scheme}//${loc.host}/ws`);
+
+    registerWebsocketHandlers(ws);
+
+    // periodically check if we have received a ping in the last n seconds
+    pingInterval = setInterval(function() {
+        if (Date.now() - lastPingTimestamp > pingInterval) {
+            let seconds = pingInterval / 1000;
+            console.log(`No ping received for more than ${seconds} seconds!`);
+            // ws.close();
+            lastPingTimestamp = Date.now();
+            connect();
+        }
+    }, pingInterval / 2);
+}
+
+function renderCircle(latLon) {
+    let color = hslToRgb(Math.random(), 1.0, luminosity);
+    let c = L.circleMarker(
+        latLon, {
+            radius: 2.0,
+            fill: true,
+            color: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
+        }
+    );
+    c.addTo(map);
+    animateCircle.call(c);
+}
+
+function animateCircle() {
+    let r = this.getRadius();
+    if (r > maxRadius) {
+        this.removeFrom(map);
+    } else {
+        r *= 1.01
+        this.setRadius(r);
+        this.setStyle({
             // weight: strokeWidth * (maxRadius - r) / maxRadius,
             opacity: 1 - r / maxRadius,
             fillOpacity: 1 - r / maxRadius,
-          });
-          setTimeout(animateCircle.bind(this), 10);
-      }
-  }
-
-  ws.onmessage = function(event) {
-    // check if message is a ping
-    if(event.data.startsWith('ping')) {
-      console.log(event.data);
-      lastPingTimestamp = Date.now();
-      return;
+        });
+        setTimeout(animateCircle.bind(this), 10);
     }
+}
 
-    // else parse the lat and long and render the circle
-    let latLang  = JSON.parse(event.data).slice(-2);
-    renderCircle(latLang);
-    console.log(latLang);
-  };
-
-  ws.onclose = function(event) {
-    console.log('Socket is closed. Reconnecting in 1 second.', event.reason);
-    setTimeout(() => {
-      connect();
-    }, 1000);
-  };
-
-  ws.onerror = function(err) {
-    console.error('Socket error: ', err.message, 'Closing socket');
-    ws.close();
-  };
-
-  let lastPingTimestamp = Date.now();
-
-  // periodically check if we have received a ping in the last n seconds
-  setInterval(function() {
-      if (Date.now() - lastPingTimestamp > PING_INTERVAL) {
-          console.log('No ping received for more than 10 seconds!');
-          socket.close();
-          connect();
-      }
-  }, PING_INTERVAL / 2);
+// get the ball rolling
+connect();
 
 })();
 </script>
