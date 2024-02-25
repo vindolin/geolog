@@ -1,7 +1,7 @@
 # geolog
 ## Visualize web server access on a browser map.
 
-![image](https://raw.githubusercontent.com/vindolin/geolog/main/screenshot.gif)
+![image](https://raw.githubusercontent.com/vindolin/geolog/main/screencast.webp)
 
 
 
