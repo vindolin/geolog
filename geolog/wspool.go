@@ -7,31 +7,31 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// WsPool is a collection of websocket connections
-type WsPool struct {
+// wsPool is a collection of websocket connections
+type wsPool struct {
 	clients   sync.Map
 	broadcast chan string
 }
 
-func NewWsPool() *WsPool {
-	return &WsPool{
+func WsPool() *wsPool {
+	return &wsPool{
 		broadcast: make(chan string),
 	}
 }
 
-func (p *WsPool) Add(conn *websocket.Conn) {
+func (p *wsPool) Add(conn *websocket.Conn) {
 	p.clients.Store(conn, true)
 }
 
-func (p *WsPool) Remove(conn *websocket.Conn) {
+func (p *wsPool) Remove(conn *websocket.Conn) {
 	p.clients.Delete(conn)
 }
 
-func (p *WsPool) Broadcast(ip string) {
+func (p *wsPool) Broadcast(ip string) {
 	p.broadcast <- ip
 }
 
-func (p *WsPool) Start() {
+func (p *wsPool) Start() {
 	for {
 		ip := <-p.broadcast
 		p.clients.Range(func(client, _ interface{}) bool {

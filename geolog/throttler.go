@@ -6,7 +6,7 @@ import (
 )
 
 // IPThrottler throttles requests based on IP address.
-type IPThrottler struct {
+type iPThrottler struct {
 	mu        sync.Mutex
 	ips       map[string]time.Time
 	throttle  time.Duration
@@ -15,8 +15,8 @@ type IPThrottler struct {
 }
 
 // New creates a new IPThrottler.
-func NewIPThrottler(throttle, cleanup time.Duration) *IPThrottler {
-	return &IPThrottler{
+func IPThrottler(throttle, cleanup time.Duration) *iPThrottler {
+	return &iPThrottler{
 		ips:       make(map[string]time.Time),
 		throttle:  throttle,
 		cleanup:   cleanup,
@@ -25,7 +25,7 @@ func NewIPThrottler(throttle, cleanup time.Duration) *IPThrottler {
 }
 
 // Allow checks if a request from the given IP is allowed.
-func (t *IPThrottler) Allow(ip string) bool {
+func (t *iPThrottler) Allow(ip string) bool {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
