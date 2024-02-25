@@ -1,7 +1,7 @@
 ## geolog - watches a web server log file and draw geolocation pings on a map in your browser
 
-> [!NOTE]
-> You have to sign up to get a Maxmind licence key for their free geoip service at: https://dev.maxmind.com/geoip
+> [!IMPORTANT]
+> You have to sign up to get a Maxmind licence key for their free geoip service at: https://dev.maxmind.com/geoip before you can use this tool.
 
 
 ```
@@ -14,7 +14,7 @@ go run . -l /var/log/nginx/access.log -g /opt/GeoLite2-City.mmdb -p 8080
 docker build --build-arg ACCOUNT_ID=976666 --build-arg LICENSE_KEY=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 -t vindolin/geolog .
 ```
 
-### Build the docker container
+### ... and run it
 
 #### in light mode
 ```
