@@ -3,18 +3,24 @@
 > [!IMPORTANT]
 > You have to sign up to get a Maxmind licence key for their free geoip service at: https://dev.maxmind.com/geoip before you can use this tool.
 
+### Run the Go program from it's github repository:
+```
+go run github.com/vindolin/geolog@latest -l /var/log/nginx/access.log -g /opt/GeoLite2-City.mmdb -d
+```
 
+
+### Run the Go program from source:
 ```
 go run . -l /var/log/nginx/access.log -g /opt/GeoLite2-City.mmdb -p 8080
 ```
 
-### Build the docker container
+### Build the docker container:
 
 ```
 docker build --build-arg ACCOUNT_ID=976666 --build-arg LICENSE_KEY=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 -t vindolin/geolog .
 ```
 
-### ... and run it
+### ... and run it:
 
 #### in light mode
 ```
