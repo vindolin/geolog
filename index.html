@@ -141,7 +141,7 @@ function registerWebsocketHandlers(ws) {
 }
 
 // connect to the websocket
-connect = () => {
+function connect() {
     console.log('Connecting to websocket');
     ws = new WebSocket(`${scheme}//${loc.host}/ws`);
 
