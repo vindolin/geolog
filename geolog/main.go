@@ -105,13 +105,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var throttler = NewIPThrottler(5*time.Second, 60*time.Second)
-
 	// create a new pool and start it
 	pool := NewWsPool()
 	go pool.Start()
 
 	go func() {
+		var throttler = NewIPThrottler(5*time.Second, 60*time.Second)
+
 		// read lines from the log file
 		for line := range tail.Lines {
 
@@ -146,9 +146,11 @@ func main() {
 		}
 	}()
 
+	// send a ping every n seconds
+	// this is used on the javascript side to keep the websocket alive
 	go func() {
 		for {
-			time.Sleep(PING_INTERVAL * time.Second) // send a ping every 10 seconds
+			time.Sleep(PING_INTERVAL * time.Second)
 
 			var payload = fmt.Sprintf(
 				"ping %d", time.Now().Unix())

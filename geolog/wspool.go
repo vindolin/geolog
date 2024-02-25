@@ -35,7 +35,8 @@ func (p *WsPool) Start() {
 	for {
 		ip := <-p.broadcast
 		p.clients.Range(func(client, _ interface{}) bool {
-			err := client.(*websocket.Conn).WriteMessage(websocket.TextMessage, []byte(ip))
+			err := client.(*websocket.Conn).WriteMessage(
+				websocket.TextMessage, []byte(ip))
 			if err != nil {
 				log.Println(err)
 				p.Remove(client.(*websocket.Conn))
