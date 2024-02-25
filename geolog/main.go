@@ -142,6 +142,8 @@ func main() {
 				record.Location.Longitude)
 
 			log.Println(payload)
+
+			// broadcast the payload to all connected clients
 			pool.broadcast <- payload
 		}
 	}()
