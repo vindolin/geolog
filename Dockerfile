@@ -15,13 +15,13 @@ RUN set -ex \
   && MMDB_FILE=$(tar -ztf /tmp/GeoLite2-City.tar.gz | grep GeoLite2-City.mmdb) \
   && tar -zxf /tmp/GeoLite2-City.tar.gz $MMDB_FILE -O > /GeoLite2-City.mmdb
 
-COPY *.go ./
-COPY go.* ./
+COPY geolog/*.go ./
+COPY geolog/go.* ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o /geolog
 
-COPY index.html index.html
-COPY favicon.ico favicon.ico
+COPY geolog/index.html index.html
+COPY geolog/favicon.ico favicon.ico
 
 COPY run.sh run.sh
 CMD ./run.sh
