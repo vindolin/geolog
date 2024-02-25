@@ -1,6 +1,8 @@
-## geolog - watches a web server log file and draw geolocation pings on a map in your browser
+# geolog
+## watche a web server log file and draw geolocation pings on a map in your browser
 
 ![image](https://github.com/vindolin/geolog/assets/834347/0bad8918-99b6-45b4-a88a-e58eca3b3c67)
+
 
 
 > [!IMPORTANT]
