@@ -22,7 +22,8 @@ go run . -l /var/log/nginx/access.log -g /opt/GeoLite2-City.mmdb -p 8080
 ### Build the docker container:
 
 ```shell
-docker build --build-arg ACCOUNT_ID={YOUR_ACCOUNT_ID} --build-arg LICENSE_KEY={YOUR_ICENSE_KEY} -t vindolin/geolog .
+docker build --build-arg ACCOUNT_ID={YOUR_ACCOUNT_ID} \
+--build-arg LICENSE_KEY={YOUR_ICENSE_KEY} -t vindolin/geolog .
 ```
 
 ### ... and run it:
