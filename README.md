@@ -39,6 +39,7 @@ docker build -t vindolin/geolog \
 ### ... and run it:
 
 #### light mode
+![image](https://raw.githubusercontent.com/vindolin/geolog/main/light.png)
 
 ```shell
 docker run  -it --rm --name geolog \
@@ -49,6 +50,7 @@ vindolin/geolog \
 ```
 
 #### dark mode
+![image](https://raw.githubusercontent.com/vindolin/geolog/main/dark.png)
 
 ```shell
 docker run  -it --rm --name geolog \
