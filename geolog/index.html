@@ -17,15 +17,23 @@
 
 <style>
 body {
-  margin: 0;
-  font-family: monospace;
+    margin: 0;
 }
 html, body {
-  height: 100%;
+    height: 100%;
 }
 
 #map {
-  height: 100%;
+    height: 100%;
+}
+
+.pulse-icon {
+    width: 1px;
+    height: 1px;
+    background-color: rgba(255,255,255,0.5);
+    border-radius: 50%;
+    /* transition: all 2s cubic-bezier(0.455, 0.050, 0.680, -0.040); */
+    transition: all 2000ms ease-in;
 }
 </style>
 
@@ -95,7 +103,6 @@ const strokeWidth = mapWidth / 300;
 const maxRadius = mapWidth / 15;
 const loc = window.location;
 
-// Hide the attribution, we are doing this for our self
 map.attributionControl.setPrefix();
 
 let scheme;
@@ -157,33 +164,46 @@ function connect() {
     }, pingIntervalTime / 2);
 }
 
-function renderCircle(latLon) {
-    let color = hslToRgb(Math.random(), 1.0, luminosity);
-    let c = L.circleMarker(
-        latLon, {
-            radius: 2.0,
-            fill: true,
-            color: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
-        }
-    );
-    c.addTo(map);
-    animateCircle.call(c);
-}
+let counter = 0;
 
-function animateCircle() {
-    let r = this.getRadius();
-    if (r > maxRadius) {
-        this.removeFrom(map);
-    } else {
-        r *= 1.01
-        this.setRadius(r);
-        this.setStyle({
-            // weight: strokeWidth * (maxRadius - r) / maxRadius,
-            opacity: 1 - r / maxRadius,
-            fillOpacity: 1 - r / maxRadius,
-        });
-        setTimeout(animateCircle.bind(this), 10);
-    }
+function renderCircle(latLon) {
+    counter++;
+
+    let color = hslToRgb(Math.random(), 1.0, luminosity);
+    let cssColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+    let iconId = `icon-${counter}`;
+
+    let icon = L.divIcon({
+        iconSize: [1, 1],
+        className: `pulse-icon ${iconId}`,
+    });
+
+    let marker = L.marker(latLon, {
+        icon: icon,
+        title: 'look at me!'
+    });
+
+    marker.on('add', function(){
+        let myIcon = document.querySelector(`.${iconId}`);
+        myIcon.style.backgroundColor = cssColor;
+
+        // animate the icon
+        setTimeout(function(){
+            myIcon.style.width = '100px';
+            myIcon.style.height = '100px';
+            myIcon.style.marginLeft = '-50px';
+            myIcon.style.marginTop = '-50px';
+            myIcon.style.opacity = 0;
+        }, 2);
+
+        // clean up the marker after a while
+        setTimeout(function(){
+            marker.removeFrom(map);
+        }, 2000);
+
+    });
+
+    marker.addTo(map);
 }
 
 // get the ball rolling
