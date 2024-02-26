@@ -1,5 +1,5 @@
 # geolog
-## Visualize web server access on a browser map.
+## Visualize live web server access on a browser map.
 
 ![image](https://raw.githubusercontent.com/vindolin/geolog/main/screencast.webp)
 
