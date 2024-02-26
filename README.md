@@ -15,6 +15,7 @@
 > Websockets get automatically reconnected.
 >
 
+
 ### Run the Go program directly from github:
 ```shell
 go run github.com/vindolin/geolog@latest \
@@ -67,3 +68,7 @@ vindolin/geolog \
 -l /var/log/nginx/access.log \
 -d
 ```
+
+
+> [!NOTICE]
+This product includes GeoLite2 data created by MaxMind, available from https://www.maxmind.com
