@@ -27,7 +27,7 @@ html, body {
     height: 100%;
 }
 
-.pulse-icon {
+.blib-icon {
     width: 1px;
     height: 1px;
     background-color: rgba(255,255,255,0.5);
@@ -164,8 +164,8 @@ function connect() {
     }, pingIntervalTime / 2);
 }
 
+// render the blips on the map
 let counter = 0;
-
 function renderCircle(latLon) {
     counter++;
 
@@ -175,7 +175,7 @@ function renderCircle(latLon) {
 
     let icon = L.divIcon({
         iconSize: [1, 1],
-        className: `pulse-icon ${iconId}`,
+        className: `blib-icon ${iconId}`,
     });
 
     let marker = L.marker(latLon, {
@@ -187,12 +187,15 @@ function renderCircle(latLon) {
         let myIcon = document.querySelector(`.${iconId}`);
         myIcon.style.backgroundColor = cssColor;
 
+        // size the blip relative to the map size
+        let blibSize = map.getSize().x / 10;
+
         // animate the icon
         setTimeout(function(){
-            myIcon.style.width = '100px';
-            myIcon.style.height = '100px';
-            myIcon.style.marginLeft = '-50px';
-            myIcon.style.marginTop = '-50px';
+            myIcon.style.width = `${blibSize}px`;
+            myIcon.style.height = `${blibSize}px`;
+            myIcon.style.marginLeft = `-${blibSize / 2}px`;
+            myIcon.style.marginTop = `-${blibSize / 2}px`;
             myIcon.style.opacity = 0;
         }, 2);
 
