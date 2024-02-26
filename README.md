@@ -68,6 +68,3 @@ vindolin/geolog \
 -l /var/log/nginx/access.log \
 -d
 ```
-
-> [!NOTE]
-> This product includes GeoLite2 data created by MaxMind, available from https://www.maxmind.com
