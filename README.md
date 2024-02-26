@@ -6,7 +6,10 @@
 
 
 > [!IMPORTANT]
-> You have to sign up to get a Maxmind licence key for their free geoip service at: https://dev.maxmind.com/geoip before you can use this tool.
+> Geolog needs a local *.mmdb Maxmind database to lookup the geo location.
+>
+> You can get a free Maxmind licence to download their geoip databases at: https://dev.maxmind.com/geoip.
+
 
 ### Run the Go program directly from github:
 ```shell
