@@ -17,7 +17,7 @@ go run github.com/vindolin/geolog@latest \
 ```
 
 
-### Run the Go program from source:
+### ... or from source:
 ```shell
 go run . \
 -l /var/log/nginx/access.log \
@@ -25,7 +25,9 @@ go run . \
 -p 8080
 ```
 
-### Build the docker container:
+## Docker
+
+### Build the container:
 
 ```shell
 docker build -t vindolin/geolog \
