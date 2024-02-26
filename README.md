@@ -38,7 +38,7 @@ docker build -t vindolin/geolog \
 
 ### ... and run it:
 
-#### light mode
+#### light map
 ![image](https://raw.githubusercontent.com/vindolin/geolog/main/light.png)
 
 ```shell
@@ -49,7 +49,7 @@ vindolin/geolog \
 -l /var/log/nginx/access.log
 ```
 
-#### dark mode
+#### dark map
 ![image](https://raw.githubusercontent.com/vindolin/geolog/main/dark.png)
 
 ```shell
