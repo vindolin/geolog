@@ -29,10 +29,10 @@ docker build --build-arg ACCOUNT_ID={YOUR_ACCOUNT_ID} --build-arg LICENSE_KEY={Y
 
 #### light mode
 ```
-docker run --name geolog -it --rm -v /var/log/nginx:/var/log/nginx:ro -p 8080:80 vindolin/geolog  -l /var/log/nginx/access.log
+docker run --name geolog -it --rm -v /var/log/nginx:/var/log/nginx:ro -p 8080:80 vindolin/geolog -l /var/log/nginx/access.log
 ```
 
 #### dark mode
 ```
-docker run --name geolog -it --rm -v /var/log/nginx:/var/log/nginx:ro -p 8080:80 vindolin/geolog  -l /var/log/nginx/access.log -d
+docker run --name geolog -it --rm -v /var/log/nginx:/var/log/nginx:ro -p 8080:80 vindolin/geolog -l /var/log/nginx/access.log -d
 ```
