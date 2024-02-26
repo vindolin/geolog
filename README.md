@@ -8,7 +8,7 @@
 > [!IMPORTANT]
 > Geolog needs a local *.mmdb Maxmind database to lookup the geo location.
 >
-> You can get a free Maxmind licence to download their geoip databases at: https://dev.maxmind.com/geoip.
+> You can get a free licence to download their geoip databases at: https://dev.maxmind.com/geoip.
 
 
 ### Run the Go program directly from github:
