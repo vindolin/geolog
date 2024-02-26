@@ -10,7 +10,7 @@
 >
 > You can get a free licence to download their geoip databases at: https://dev.maxmind.com/geoip.
 >
-> Geolog creates a webserver from which the map is served, updates happen over websockets.
+> Geolog creates a http server from which the map is served, updates happen over websockets.
 >
 > Websockets get automatically reconnected.
 >
