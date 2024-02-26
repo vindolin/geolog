@@ -8,7 +8,7 @@
 > [!IMPORTANT]
 > You have to sign up to get a Maxmind licence key for their free geoip service at: https://dev.maxmind.com/geoip before you can use this tool.
 
-### Run the Go program from it's github repository:
+### Run the Go program directly from github:
 ```shell
 go run github.com/vindolin/geolog@latest \
 -l /var/log/nginx/access.log \
