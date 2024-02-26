@@ -1,4 +1,4 @@
-FROM golang:1.22.0-bookworm
+FROM golang:1.22.0-bookworm as builder
 
 ARG ACCOUNT_ID
 ARG LICENSE_KEY
@@ -20,8 +20,12 @@ COPY geolog/go.* ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o /geolog
 
+FROM scratch
+
+COPY --from=builder GeoLite2-City.mmdb GeoLite2-City.mmdb
+COPY --from=builder geolog geolog
+
 COPY geolog/index.html index.html
 COPY geolog/favicon.ico favicon.ico
 
-COPY run.sh run.sh
-CMD ./run.sh
+ENTRYPOINT ["/geolog", "-g", "/GeoLite2-City.mmdb", "-p", "80"]
