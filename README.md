@@ -42,7 +42,7 @@ docker build -t vindolin/geolog \
 ![image](https://raw.githubusercontent.com/vindolin/geolog/main/light.png)
 
 ```shell
-docker run  -it --rm --name geolog \
+docker run -it --rm --name geolog \
 -v /var/log/nginx:/var/log/nginx:ro \
 -p 8080:80 \
 vindolin/geolog \
@@ -53,7 +53,7 @@ vindolin/geolog \
 ![image](https://raw.githubusercontent.com/vindolin/geolog/main/dark.png)
 
 ```shell
-docker run  -it --rm --name geolog \
+docker run -it --rm --name geolog \
 -v /var/log/nginx:/var/log/nginx:ro \
 -p 8080:80 \
 vindolin/geolog \
