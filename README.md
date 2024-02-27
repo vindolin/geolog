@@ -4,6 +4,24 @@
 ![image](https://raw.githubusercontent.com/vindolin/geolog/main/screencast.webp)
 
 
+```shell
+
+usage: run [-h|--help] -l|--log_file "<value>" -g|--geodb_file "<value>"
+           [-p|--port "<value>"] [-b|--blip_life_time <integer>] [-d|--dark]
+
+           run the geolog websocket server
+
+Arguments:
+
+  -h  --help            Print help information
+  -l  --log_file        log file to tail
+  -g  --geodb_file      geolite db to use
+  -p  --port            port to listen on. Default: 8080
+  -b  --blip_life_time  life time of the map blips (Milliseconds). Default:
+                        2080
+  -d  --dark            dark mode
+```
+
 
 > [!IMPORTANT]
 > Geolog needs a local *.mmdb Maxmind database to lookup the geo location.

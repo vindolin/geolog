@@ -72,7 +72,7 @@ func main() {
 		&argparse.Options{Required: false, Help: "port to listen on", Default: "8080"})
 
 	blipLifeTime := parser.Int("b", "blip_life_time",
-		&argparse.Options{Required: false, Help: "life time of the map blips (Milliseconds)", Default: 2080})
+		&argparse.Options{Required: false, Help: "life time of the map blips (Milliseconds)", Default: 2000})
 
 	darkMode := parser.Flag("d", "dark", &argparse.Options{Help: "dark mode"})
 
