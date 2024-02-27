@@ -27,13 +27,14 @@ html, body {
     height: 100%;
 }
 
-.blib-icon {
+.blib-icon div {
+    display:inline-block;
     width: 1px;
     height: 1px;
     background-color: rgba(255,255,255,0.5);
     border-radius: 50%;
-    /* transition: all 2s cubic-bezier(0.455, 0.050, 0.680, -0.040); */
-    transition: all {{.BlipLifeTime}}ms ease-in;
+    transition: all {{.BlipLifeTime}}ms cubic-bezier(0.4, 0.1, 1, -0.05);
+    /*transition: all {{.BlipLifeTime}}ms cubic-bezier(0.4, 0.1, 0.7, -0.05);*/
 }
 </style>
 
@@ -157,7 +158,6 @@ function connect() {
         if (Date.now() - lastPingTimestamp > pingIntervalTime) {
             let seconds = pingInterval / 1000;
             console.info(`No ping received for more than ${seconds} seconds!`);
-            // ws.close();
             lastPingTimestamp = Date.now();
             connect();
         }
@@ -176,8 +176,8 @@ function renderCircle(latLon) {
     let iconId = `icon-${counter}`;
 
     let icon = L.divIcon({
-        iconSize: [1, 1],
         className: `blib-icon ${iconId}`,
+        html: '<div></div>',
     });
 
     let marker = L.marker(latLon, {
@@ -186,32 +186,28 @@ function renderCircle(latLon) {
     });
 
     marker.on('add', function(){
-        let myIcon = document.querySelector(`.${iconId}`);
+        let myIcon = document.querySelector(`.${iconId} div`);
         myIcon.style.backgroundColor = cssColor;
 
         // size the blip relative to the map size
-        let blibSize = map.getSize().x / 10;
+        let blibSize = map.getSize().x * {{.BlipSize}};
 
         // animate the icon
         setTimeout(function(){
-            myIcon.style.width = `${blibSize}px`;
-            myIcon.style.height = `${blibSize}px`;
-            myIcon.style.marginLeft = `-${blibSize / 2}px`;
-            myIcon.style.marginTop = `-${blibSize / 2}px`;
+            myIcon.style.transform = `scale(${blibSize})`;
             myIcon.style.opacity = 0;
-        }, 2);
+        });
 
         // clean up the marker after a while
         setTimeout(function(){
             marker.removeFrom(map);
-        }, {{.BlipLifeTime}});
-
+        }, {{.BlipLifeTime}} * 2);
     });
 
     marker.addTo(map);
 }
 
-// get the ball rolling
+// lets party!
 connect();
 
 })();

@@ -71,6 +71,9 @@ func main() {
 	port := parser.String("p", "port",
 		&argparse.Options{Required: false, Help: "port to listen on", Default: "8080"})
 
+	blipSize := parser.Float("s", "blip_size",
+		&argparse.Options{Required: false, Help: "Size of the blib relative to the map width", Default: 0.4})
+
 	blipLifeTime := parser.Int("b", "blip_life_time",
 		&argparse.Options{Required: false, Help: "life time of the map blips (Milliseconds)", Default: 2000})
 
@@ -89,6 +92,7 @@ func main() {
 	type IndexTemplateData struct {
 		DarkMode     bool
 		BlipLifeTime int
+		BlipSize     float32
 	}
 
 	// open the maxmind db
@@ -175,6 +179,7 @@ func main() {
 			w, IndexTemplateData{
 				DarkMode:     *darkMode,
 				BlipLifeTime: *blipLifeTime,
+				BlipSize:     float32(*blipSize),
 			})
 	})
 
