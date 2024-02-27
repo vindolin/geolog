@@ -28,13 +28,11 @@ html, body {
 }
 
 .blip-icon div {
-    /* if we scale the icon itself, the blip wanders around, setting this to inline-block fixes that */
-    display:inline-block;
-    width: 1px;
-    height: 1px;
-    background-color: rgba(255,255,255,0.5);
-    border-radius: 50%;
-    transition: all {{.BlipLifeTime}}ms cubic-bezier(0.4, 0.1, 1, -0.05);
+    /* if we scale the icon itself, the blip wanders around */
+    display: inline-block;
+    width: 2px;
+    height: 2px;
+    clip-path: circle(50%);
     transition: all {{.BlipLifeTime}}ms ease-in;
 }
 </style>
@@ -192,10 +190,9 @@ function renderCircle(latLon) {
 
     let marker = L.marker(latLon, {
         icon: icon,
-        title: 'look at me!'
     });
 
-    marker.on('add', function(){
+    marker.on('add', function() {
         let myIcon = document.querySelector(`.${iconId} div`);
         myIcon.style.backgroundColor = cssColor;
 
@@ -203,15 +200,21 @@ function renderCircle(latLon) {
         let blipSize = map.getSize().x * {{.BlipSize}};
 
         // animate the icon
-        setTimeout(function(){
-            myIcon.style.transform = `scale(${blipSize})`;
-            myIcon.style.opacity = 0;
-        });
+        new Promise((resolve) => {
 
-        // clean up the marker after a while
-        setTimeout(function(){
-            marker.removeFrom(map);
-        }, {{.BlipLifeTime}} * 2);
+            setTimeout(() => {
+                myIcon.style.transform = `scale(${blipSize})`;
+                // myIcon.style.transform = `scale(500)`;
+                myIcon.style.opacity = 0;
+                resolve();
+            }, 100);
+
+        }).then(() => {
+            // clean up the marker after a while
+            setTimeout(() => {
+                marker.removeFrom(map);
+            }, {{.BlipLifeTime}} * 2);
+        });
     });
 
     marker.addTo(map);
