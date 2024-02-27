@@ -114,9 +114,10 @@ if (loc.protocol === 'https:') {
     scheme = 'ws:';
 }
 
-let lastPingTimestamp = Date.now();
 let ws;
+let lastPingTimestamp = Date.now();
 let pingInterval;
+let reconnecting;
 
 function registerWebsocketHandlers(ws) {
     ws.onmessage = function(event) {
@@ -132,18 +133,26 @@ function registerWebsocketHandlers(ws) {
     };
 
     ws.onclose = function(event) {
-        console.info('Socket is closed. Reconnecting in 1 second.');
+        console.info('Socket is closed. Reconnecting in 1 second');
+
+        if(reconnecting) return;
+        reconnecting = true;
 
         // fast reconnect
         setTimeout(() => {
             clearInterval(pingInterval);
             connect();
+            reconnecting = false;
         }, 1000);
     };
 
     ws.onerror = function(err) {
         console.error(`Socket error: ${err.message}, Closing socket`);
         ws.close();
+    };
+
+    ws.onopen = function() {
+        console.info('Socket connected');
     };
 }
 
