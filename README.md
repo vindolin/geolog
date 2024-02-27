@@ -18,7 +18,7 @@ Arguments:
   -g  --geodb_file      geolite db to use
   -p  --port            port to listen on. Default: 8080
   -b  --blip_life_time  life time of the map blips (Milliseconds). Default:
-                        2080
+                        2000
   -d  --dark            dark mode
 ```
 
