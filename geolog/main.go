@@ -63,20 +63,19 @@ func handler(w http.ResponseWriter, r *http.Request, pool *wsPool) {
 func main() {
 	// setup command line arguments
 	parser := argparse.NewParser("run", "run the geolog websocket server")
+	// mandatory arguments
 	logFile := parser.String("l", "log_file",
 		&argparse.Options{Required: true, Help: "log file to tail"})
 	geoliteDb := parser.String("g", "geodb_file",
 		&argparse.Options{Required: true, Help: "geolite db to use"})
 
+	// optional arguments
 	port := parser.String("p", "port",
 		&argparse.Options{Required: false, Help: "port to listen on", Default: "8080"})
-
 	blipSize := parser.Float("s", "blip_size",
 		&argparse.Options{Required: false, Help: "Maximum size of the blip relative to the map width", Default: 0.3})
-
 	blipLifeTime := parser.Int("b", "blip_life_time",
 		&argparse.Options{Required: false, Help: "life time of the map blips (Milliseconds)", Default: 2000})
-
 	darkMode := parser.Flag("d", "dark", &argparse.Options{Help: "dark mode"})
 
 	const PING_INTERVAL = 10
