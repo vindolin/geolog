@@ -7,7 +7,8 @@
 ```shell
 
 usage: run [-h|--help] -l|--log_file "<value>" -g|--geodb_file "<value>"
-           [-p|--port "<value>"] [-b|--blip_life_time <integer>] [-d|--dark]
+           [-p|--port "<value>"] [-s|--blip_size <float>] [-b|--blip_life_time
+           <integer>] [-d|--dark]
 
            run the geolog websocket server
 
@@ -17,11 +18,10 @@ Arguments:
   -l  --log_file        log file to tail
   -g  --geodb_file      geolite db to use
   -p  --port            port to listen on. Default: 8080
-  -b  --blip_life_time  life time of the map blips (Milliseconds). Default:
-                        2000
+  -s  --blip_size       Maximum size of the blib relative to the map width. Default: 0.4
+  -b  --blip_life_time  life time of the map blips (Milliseconds). Default: 2000
   -d  --dark            dark mode
-```
-
+  ```
 
 > [!IMPORTANT]
 > Geolog needs a local *.mmdb Maxmind database to lookup the geo location.
