@@ -18,7 +18,7 @@ Arguments:
   -l  --log_file        log file to tail
   -g  --geodb_file      geolite db to use
   -p  --port            port to listen on. Default: 8080
-  -s  --blip_size       Maximum size of the blib relative to the map width. Default: 0.4
+  -s  --blip_size       Maximum size of the blib relative to the map width. Default: 0.3
   -b  --blip_life_time  life time of the map blips (Milliseconds). Default: 2000
   -d  --dark            dark mode
   ```
