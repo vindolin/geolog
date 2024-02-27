@@ -72,7 +72,7 @@ func main() {
 		&argparse.Options{Required: false, Help: "port to listen on", Default: "8080"})
 
 	blipSize := parser.Float("s", "blip_size",
-		&argparse.Options{Required: false, Help: "Maximum size of the blib relative to the map width", Default: 0.3})
+		&argparse.Options{Required: false, Help: "Maximum size of the blip relative to the map width", Default: 0.3})
 
 	blipLifeTime := parser.Int("b", "blip_life_time",
 		&argparse.Options{Required: false, Help: "life time of the map blips (Milliseconds)", Default: 2000})

@@ -27,7 +27,7 @@ html, body {
     height: 100%;
 }
 
-.blib-icon div {
+.blip-icon div {
     /* if we scale the icon itself, the blip wanders around, setting this to inline-block fixes that */
     display:inline-block;
     width: 1px;
@@ -177,7 +177,7 @@ function renderCircle(latLon) {
     let iconId = `icon-${counter}`;
 
     let icon = L.divIcon({
-        className: `blib-icon ${iconId}`,
+        className: `blip-icon ${iconId}`,
         html: '<div></div>',
     });
 
@@ -191,11 +191,11 @@ function renderCircle(latLon) {
         myIcon.style.backgroundColor = cssColor;
 
         // size the blip relative to the map size
-        let blibSize = map.getSize().x * {{.BlipSize}};
+        let blipSize = map.getSize().x * {{.BlipSize}};
 
         // animate the icon
         setTimeout(function(){
-            myIcon.style.transform = `scale(${blibSize})`;
+            myIcon.style.transform = `scale(${blipSize})`;
             myIcon.style.opacity = 0;
         });
 
