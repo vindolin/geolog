@@ -71,6 +71,9 @@ func main() {
 	port := parser.String("p", "port",
 		&argparse.Options{Required: false, Help: "port to listen on", Default: "8080"})
 
+	blipLifeTime := parser.Int("b", "blip_life_time",
+		&argparse.Options{Required: false, Help: "life time of the map blips (Milliseconds)", Default: 2080})
+
 	darkMode := parser.Flag("d", "dark", &argparse.Options{Help: "dark mode"})
 
 	const PING_INTERVAL = 10
@@ -84,7 +87,8 @@ func main() {
 
 	// this struct holds the data that will be passed to the index.html template
 	type IndexTemplateData struct {
-		DarkMode bool
+		DarkMode     bool
+		BlipLifeTime int
 	}
 
 	// open the maxmind db
@@ -168,7 +172,10 @@ func main() {
 	// serve the index.html file
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		template.Must(template.ParseFiles("index.html")).Execute(
-			w, IndexTemplateData{DarkMode: *darkMode})
+			w, IndexTemplateData{
+				DarkMode:     *darkMode,
+				BlipLifeTime: *blipLifeTime,
+			})
 	})
 
 	// serve the websocket

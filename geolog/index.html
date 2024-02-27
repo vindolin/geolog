@@ -33,7 +33,7 @@ html, body {
     background-color: rgba(255,255,255,0.5);
     border-radius: 50%;
     /* transition: all 2s cubic-bezier(0.455, 0.050, 0.680, -0.040); */
-    transition: all 2000ms ease-in;
+    transition: all {{.BlipLifeTime}}ms ease-in;
 }
 </style>
 
@@ -169,8 +169,10 @@ let counter = 0;
 function renderCircle(latLon) {
     counter++;
 
+    // generate color with random hue
     let color = hslToRgb(Math.random(), 1.0, luminosity);
     let cssColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+
     let iconId = `icon-${counter}`;
 
     let icon = L.divIcon({
@@ -202,7 +204,7 @@ function renderCircle(latLon) {
         // clean up the marker after a while
         setTimeout(function(){
             marker.removeFrom(map);
-        }, 2000);
+        }, {{.BlipLifeTime}});
 
     });
 
