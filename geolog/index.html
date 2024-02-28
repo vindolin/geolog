@@ -48,22 +48,21 @@ html, body {
 // initialize with GO template variables
 const darkMode = {{if .DarkMode}}true{{ else }}false{{ end }};
 
-const pingIntervalTime = 30 * 1000;
+const pingIntervalTime = 30 * 1000; // ms
 
 const map = L.map('map', {zoomControl: false}).fitBounds([
     [20, -80],
     [30, 110]
 ]);
 
+
 if(darkMode) {
-    const Stadia_AlidadeSmoothDark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.{ext}', {
-        minZoom: 0,
-        maxZoom: 20,
-        ext: 'png'
+    L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png', {
+        maxZoom: 5,
     }).addTo(map);
 } else {
-    const OpenStreetMap_Mapnik = L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
+    L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 5,
     }).addTo(map)
 }
 
@@ -72,7 +71,7 @@ const mapWidth = map.getSize().x;
 const strokeWidth = mapWidth / 300;
 const maxRadius = mapWidth / 15;
 const loc = window.location;
-const transitionDelay = 100;
+const transitionDelay = 100;  // ms to wait before starting the transitions
 
 map.attributionControl.setPrefix();
 
@@ -83,7 +82,8 @@ let pingInterval;
 let reconnecting;
 
 function registerWebsocketHandlers(ws) {
-    ws.onmessage = function(event) {
+    ws.onmessage = (event) => {
+
         // check if message is a ping
         if(event.data.startsWith('ping')) {
             lastPingTimestamp = Date.now();
@@ -91,6 +91,7 @@ function registerWebsocketHandlers(ws) {
         }
 
         // else parse the lat and long and render the circle
+        // json format: ["154.115.244.139", 6.000000, 48.000000]
         const latLang  = JSON.parse(event.data).slice(-2);
         renderCircle(latLang);
     };
@@ -128,12 +129,12 @@ function connect() {
 
     // periodically check if we have received a ping in the last n seconds
     pingInterval = setInterval(function() {
-        if (Date.now() - lastPingTimestamp > pingIntervalTime) {
-            const seconds = pingInterval / 1000;
-            console.info(`No ping received for more than ${seconds} seconds!`);
-            lastPingTimestamp = Date.now();
-            connect();
-        }
+        if (Date.now() - lastPingTimestamp <= pingIntervalTime) return;
+
+        const seconds = pingInterval / 1000;
+        console.info(`No ping received for more than ${seconds} seconds!`);
+        lastPingTimestamp = Date.now();
+        connect();
     }, pingIntervalTime / 2);
 }
 
@@ -167,12 +168,10 @@ async function renderCircle(latLon) {
         setTimeout(() => {
             blipDiv.style.transform = `scale(${blipSize})`;
             blipDiv.style.opacity = 0;
-
-            // clean up the marker after a while
-            setTimeout(() => {
-                marker.removeFrom(map);
-            }, {{.BlipLifeTime}} * 2);
         }, transitionDelay);
+
+        // clean up the marker after the transition
+        blipDiv.addEventListener('transitionend', () => marker.removeFrom(map));
     });
 
     marker.addTo(map);
