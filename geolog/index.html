@@ -50,44 +50,34 @@ const darkMode = {{if .DarkMode}}true{{ else }}false{{ end }};
 
 const pingIntervalTime = 30 * 1000;
 
-let map = L.map('map', {zoomControl: false}).fitBounds([
+const map = L.map('map', {zoomControl: false}).fitBounds([
     [20, -80],
     [30, 110]
 ]);
 
-let luminosity;
 if(darkMode) {
-    var Stadia_AlidadeSmoothDark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.{ext}', {
+    const Stadia_AlidadeSmoothDark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.{ext}', {
         minZoom: 0,
         maxZoom: 20,
         ext: 'png'
     }).addTo(map);
-
-    luminosity = '60%';
-
 } else {
-    var OpenStreetMap_Mapnik = L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const OpenStreetMap_Mapnik = L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
     }).addTo(map)
-
-    luminosity = '40%';
 }
 
+const luminosity = darkMode ? '60%' : '40%';
 const mapWidth = map.getSize().x;
 const strokeWidth = mapWidth / 300;
 const maxRadius = mapWidth / 15;
 const loc = window.location;
+const transitionDelay = 100;
 
 map.attributionControl.setPrefix();
 
-let scheme;
-if (loc.protocol === 'https:') {
-    scheme = 'wss:';
-} else {
-    scheme = 'ws:';
-}
+const scheme = loc.protocol === 'https:' ? 'wss :' : 'ws:';
 
-let ws;
 let lastPingTimestamp = Date.now();
 let pingInterval;
 let reconnecting;
@@ -101,7 +91,7 @@ function registerWebsocketHandlers(ws) {
         }
 
         // else parse the lat and long and render the circle
-        let latLang  = JSON.parse(event.data).slice(-2);
+        const latLang  = JSON.parse(event.data).slice(-2);
         renderCircle(latLang);
     };
 
@@ -132,14 +122,14 @@ function registerWebsocketHandlers(ws) {
 // connect to the websocket
 function connect() {
     console.info('Connecting to websocket');
-    ws = new WebSocket(`${scheme}//${loc.host}/ws`);
+    const ws = new WebSocket(`${scheme}//${loc.host}/ws`);
 
     registerWebsocketHandlers(ws);
 
     // periodically check if we have received a ping in the last n seconds
     pingInterval = setInterval(function() {
         if (Date.now() - lastPingTimestamp > pingIntervalTime) {
-            let seconds = pingInterval / 1000;
+            const seconds = pingInterval / 1000;
             console.info(`No ping received for more than ${seconds} seconds!`);
             lastPingTimestamp = Date.now();
             connect();
@@ -149,45 +139,40 @@ function connect() {
 
 // render the blips on the map
 let counter = 0;
-function renderCircle(latLon) {
+
+async function renderCircle(latLon) {
     counter++;
 
-    // generate color with random hue
-    let cssColor = `hsl(${Math.random() * 360}, 100%, ${luminosity})`;
+    const iconId = `icon-${counter}`;
 
-    let iconId = `icon-${counter}`;
-
-    let icon = L.divIcon({
+    const icon = L.divIcon({
         className: `blip-icon ${iconId}`,
         html: '<div></div>',
     });
 
-    let marker = L.marker(latLon, {
+    const marker = L.marker(latLon, {
         icon: icon,
     });
 
     marker.on('add', function() {
-        let myIcon = document.querySelector(`.${iconId} div`);
-        myIcon.style.backgroundColor = cssColor;
+        const blipDiv = document.querySelector(`.${iconId} div`);
+
+        // generate color with random hue
+        blipDiv.style.backgroundColor =`hsl(${Math.random() * 360}, 100%, ${luminosity})`;
 
         // size the blip relative to the map size
-        let blipSize = map.getSize().x * {{.BlipSize}};
+        const blipSize = map.getSize().x * {{.BlipSize}};
 
         // animate the icon
-        new Promise((resolve) => {
+        setTimeout(() => {
+            blipDiv.style.transform = `scale(${blipSize})`;
+            blipDiv.style.opacity = 0;
 
-            setTimeout(() => {
-                myIcon.style.transform = `scale(${blipSize})`;
-                myIcon.style.opacity = 0;
-                resolve();
-            }, 100);
-
-        }).then(() => {
             // clean up the marker after a while
             setTimeout(() => {
                 marker.removeFrom(map);
             }, {{.BlipLifeTime}} * 2);
-        });
+        }, transitionDelay);
     });
 
     marker.addTo(map);
