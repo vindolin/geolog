@@ -141,22 +141,22 @@ function connect() {
 // render the blips on the map
 let counter = 0;
 
-async function renderCircle(latLon) {
+function renderCircle(latLon) {
     counter++;
 
-    const iconId = `icon-${counter}`;
+    const iconId = `blip-div-${counter}`;
 
     const icon = L.divIcon({
-        className: `blip-icon ${iconId}`,
-        html: '<div></div>',
+        className: `blip-icon`,
+        html: `<div id="${iconId}"></div>`,
     });
 
     const marker = L.marker(latLon, {
         icon: icon,
     });
 
-    marker.on('add', function() {
-        const blipDiv = document.querySelector(`.${iconId} div`);
+    marker.on('add', () => {
+        const blipDiv = document.getElementById(iconId);
 
         // generate color with random hue
         blipDiv.style.backgroundColor =`hsl(${Math.random() * 360}, 100%, ${luminosity})`;
