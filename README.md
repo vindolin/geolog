@@ -36,7 +36,7 @@ Arguments:
 
 ### Run the Go program directly from github:
 ```shell
-go run github.com/vindolin/geolog@latest \
+go run github.com/vindolin/geolog \
 -l /var/log/nginx/access.log \
 -g /opt/GeoLite2-City.mmdb \
 -d
